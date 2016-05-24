@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<head>
+	<title>EnglishCards</title>
+	<meta charset="utf-8">
+	<script type="text/javascript" src="http://scriptjava.net/source/scriptjava/scriptjava.js"></script>
+	<script type="text/javascript">
+		var widthStart = document.documentElement.clientWidth;  
+        var heightStart = document.documentElement.clientHeight;
+        var count = 0;
+        var words = [];
+        var indexArray = [];
+        var dictionary = "";
+        var audio = new Audio();
+		
+		function trainingView() {
+			dictionary = document.getElementById('mainSelectForm').value;
+			$$i({
+				create:'script',
+				attribute: {
+					'type':'text/javascript',
+					'src':"dictionaries/" + dictionary + "/words.js"
+				},
+				insert:$$().body,
+				onready:function() {
+					words = getWords();
+					indexArray = getSortNumbersArray(words.length);
+
+					document.getElementById('main').innerHTML = "<p id='lab' onclick='playSound()'></p>" +
+						"<div id='formBlock'>" +
+							"<form id='testForm' onsubmit='return renameLabel()'>" +
+								"<input id='txt' type='text' autocomplete='off' autofocus='autofocus'/>" +
+							"</form>" +
+						"</div>";
+					document.getElementById('lab').innerHTML = "#" + (count + 1) + ": " + words[indexArray[count]][1];
+					restyle();
+					document.getElementById('txt').focus();
+					audio.src = "dictionaries/" + dictionary + "/sounds/" + words[indexArray[count]][0] + ".mp3";
+				}
+			});
+		}
+        
+
+        function getSortNumbersArray(length) {
+			var array = [];
+			if (length > 0) {
+				for (var i = 0; i < length; i++) {
+					array[i] = i;
+				}
+
+				for (var i = 0; i < length - 1; i++) {
+					var tmp;
+					for (var j = 0; j < length - 1; j++) {
+						var rand = Math.round(Math.random() * 10) % 2;
+				        if (rand > 0) {
+				            tmp = array[j];
+				            array[j] = array[j + 1];
+				            array[j + 1] = tmp;
+				        }
+					}
+					for (var j = length - 1; j > 0; j--) {
+						var rand = Math.round(Math.random() * 10) % 2;
+				        if (rand > 0) {
+				            tmp = array[j];
+				            array[j] = array[j - 1];
+				            array[j - 1] = tmp;
+				        }
+					}
+			    }
+			}
+			return array;
+		}
+		
+
+		function renameLabel() {	
+
+			if (words[indexArray[count]][0] == document.getElementById('txt').value) {
+
+				playSound();  				  				
+				document.getElementById('txt').style.backgroundColor = "#99FF66";
+
+				document.getElementById("txt").disabled = true;
+				setTimeout(function() {
+        			document.getElementById('txt').style.backgroundColor = "";
+        			document.getElementById('txt').value = "";
+        			document.getElementById('lab').innerHTML = "#" + (count + 1) + ": " + words[indexArray[count]][1];
+        			document.getElementById('txt').disabled = false;
+        			document.getElementById('txt').focus();
+    			}, 1000);
+				count++;
+
+			} else if (document.getElementById('txt').value == "?") {
+				document.getElementById('txt').style.backgroundColor = "#99FF66";
+				document.getElementById('txt').value = words[indexArray[count]][0];
+				document.getElementById('txt').focus();
+			} else {
+				document.getElementById('txt').style.backgroundColor = "#FF6666";
+				document.getElementById("txt").disabled = true;
+				setTimeout(function() {
+        			document.getElementById('txt').style.backgroundColor = "";
+        			document.getElementById('txt').value = "";
+        			document.getElementById("txt").disabled = false;
+        			document.getElementById('txt').focus();
+    			}, 1000);
+			}
+
+			if (count >= words.length) {
+				count = 0;
+				indexArray = getSortNumbersArray(words.length);
+			}	
+
+
+			return false;
+		}
+		function playSound() {
+			audio.src = "dictionaries/" + dictionary + "/sounds/" + words[indexArray[count]][0] + ".mp3";
+			audio.play();
+		}
+	</script>
+	<style type="text/css">
+		body {
+			margin: 0px;
+			font-family: Arial;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+		}
+		p {
+			text-align: center;
+		}
+		#lab {			
+			cursor: pointer;
+		}
+		#main {
+			overflow: hidden;
+			position: relative;
+		}
+		#mainBlock {
+			margin: 0px auto;
+			text-align: center;
+		}
+
+		#mainButton {
+			margin-top: 50px;
+			outline: none;
+		}
+		
+		#mainSelectForm, #mainButton {
+			border: 1px solid black;
+			background: none;
+			outline: none;
+		}
+		#mainSelectForm:focus, #mainButton:focus {
+			background-color: #f0f0f0;
+		}
+		#txt {
+			border: 3px solid black;
+			border-radius: 15px;
+			padding: 0px 5px;
+			outline:none;
+			background-color: #dddddd;
+		}
+		#txt:focus {
+			background-color: white;
+		}
+		#formBlock {
+			margin: 0px auto;
+		}
+	</style>
+</head>
+<body>
+	<div id="main">
+		
+		<p id="mainText">Выбрать словарь</p><br>
+		<div id="mainBlock">
+			<form onsubmit="trainingView(); return false">
+				<select id="mainSelectForm">
+				  <option value="Top100Nouns">Топ 100 существительных</option>
+				  <option value="Top100Adjectives">Топ 100 прилагательных</option>
+				  <option value="Top100Verbs">Топ 100 глаголов</option>
+				  <option value="Top100Adverbs">Топ 100 наречий</option>
+				  <option value="Top170PhrasalVerbs">Топ 170 фразовых глаголов</option>
+				</select><br>
+				<input id="mainButton" type="submit" value="Пуск" />
+			</form>
+		</div>
+	</div>
+<script type="text/javascript">
+	document.getElementById('main').style.width = widthStart + "px";
+	document.getElementById('main').style.height = heightStart + "px";
+	document.getElementById('mainText').style.fontSize = heightStart * 0.05 + "px";
+	document.getElementById('mainText').style.marginTop = heightStart - (heightStart * 0.8) + "px";
+	document.getElementById('mainBlock').style.width = widthStart + "px";
+	document.getElementById('mainSelectForm').style.fontSize = heightStart * 0.05 + "px";
+	document.getElementById('mainButton').style.fontSize = heightStart * 0.1 + "px";
+
+	function restyle() {
+		document.getElementById('lab').style.fontSize = heightStart * 0.1 + "px";
+		document.getElementById('lab').style.marginTop = heightStart - (heightStart * 0.8) + "px";
+		document.getElementById('formBlock').style.width = widthStart * 0.8 + "px";
+		document.getElementById('txt').style.width = widthStart * 0.8 + "px";
+		document.getElementById('txt').style.height = heightStart * 0.15 + "px";
+		document.getElementById('txt').style.fontSize = heightStart * 0.1 + "px";
+		document.getElementById('txt').style.color = "black";
+	}
+</script>
+</body>
+</html>
